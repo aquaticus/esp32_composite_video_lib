@@ -77,27 +77,27 @@ The library can generate any resolution in non-interlaced mode.
 
 Here is a list of predefined commonly used resolutions:
 
-|Resolution | System  | Pixel clock | Description                              |
-------------|---------|-------------|------------------------------------------|
-384×288     |PAL/SECAM|7.357 MHz    |Overscan non-interlaced
-320×256     |PAL/SECAM|7.357 MHz    |Amiga PAL low res non-interlaced
-320×200     |PAL/SECAM|7.357 MHz    |Commodore 64 hi res mode
-320×192     |PAL/SECAM|7.357 MHz    |Atari 8 bit "Graphics 8"
-256×192     |PAL/SECAM|7.357 MHz    |ZX Spectrum, MSX
-640×200     |PAL/SECAM|14.75 MHz    |Amstrad CPC hi res
-640×256     |PAL/SECAM|14.75 MHz    |Amiga PAL hi res non-interlaced
-512×192     |PAL/SECAM|14.75 MHz    |Timex, Sinclair QL, MSX2
-768×288     |PAL/SECAM|7.357 MHz    |Overscan hi res non-interlaced
-360×288     |PAL/SECAM|6.75 MHz     |BT.601 DV/DVD non-interlaced
-720×288     |PAL/SECAM|13.5 MHz     |BT.601 DV/DVD hi res non-interlaced
-256×192     |NTSC     |6.136 MHz    |ZX Spectrum, MSX
-320×192     |NTSC     |6.136 MHz    |Atari 8 bit "Graphics 8"
-320×200     |NTSC     |6.136 MHz    |Commodore 64 hi res mode
-640×200     |NTSC     |13.5 MHz     |Amiga NTSC hi res non-interlaced
-320×240     |NTSC     |6.136 MHz    |NTSC Overscan square pixels
-640×240     |NTSC     |13.5 MHz     |NTSC Overscan, non-interlaced
-360×240     |NTSC     |13.5 MHz     |BT.601 DV/DVD hi-res non-interlaced
-720×240     |NTSC     |13.5 MHz     |BT.601 DV/DVD hi-res non-interlaced
+| Resolution | System    | Pixel clock | Description                         |
+|------------|-----------|-------------|-------------------------------------|
+| 384×288    | PAL/SECAM | 7.357 MHz   | Overscan non-interlaced             |
+| 320×256    | PAL/SECAM | 7.357 MHz   | Amiga PAL low res non-interlaced    |
+| 320×200    | PAL/SECAM | 7.357 MHz   | Commodore 64 hi res mode            |
+| 320×192    | PAL/SECAM | 7.357 MHz   | Atari 8 bit "Graphics 8"            |
+| 256×192    | PAL/SECAM | 7.357 MHz   | ZX Spectrum, MSX                    |
+| 640×200    | PAL/SECAM | 14.75 MHz   | Amstrad CPC hi res                  |
+| 640×256    | PAL/SECAM | 14.75 MHz   | Amiga PAL hi res non-interlaced     |
+| 512×192    | PAL/SECAM | 14.75 MHz   | Timex, Sinclair QL, MSX2            |
+| 768×288    | PAL/SECAM | 7.357 MHz   | Overscan hi res non-interlaced      |
+| 360×288    | PAL/SECAM | 6.75 MHz    | BT.601 DV/DVD non-interlaced        |
+| 720×288    | PAL/SECAM | 13.5 MHz    | BT.601 DV/DVD hi res non-interlaced |
+| 256×192    | NTSC      | 6.136 MHz   | ZX Spectrum, MSX                    |
+| 320×192    | NTSC      | 6.136 MHz   | Atari 8 bit "Graphics 8"            |
+| 320×200    | NTSC      | 6.136 MHz   | Commodore 64 hi res mode            |
+| 640×200    | NTSC      | 13.5 MHz    | Amiga NTSC hi res non-interlaced    |
+| 320×240    | NTSC      | 6.136 MHz   | NTSC Overscan square pixels         |
+| 640×240    | NTSC      | 13.5 MHz    | NTSC Overscan, non-interlaced       |
+| 360×240    | NTSC      | 13.5 MHz    | BT.601 DV/DVD hi-res non-interlaced |
+| 720×240    | NTSC      | 13.5 MHz    | BT.601 DV/DVD hi-res non-interlaced |
 
 # How to use
 
@@ -113,7 +113,7 @@ You can optionally launch the configuration menu with `idf.py menuconfig` on you
 To use LVGL library along composite video library add one more submodule:
 
 ```bash
-git clone add https://github.com/lvgl/lvgl.git components/lvgl
+git submodule add https://github.com/lvgl/lvgl.git components/lvgl
 ```
 
 # Sample program
