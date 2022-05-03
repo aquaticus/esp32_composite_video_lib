@@ -35,9 +35,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef enum _VIDEO_MODE
 {
     VIDEO_MODE_PAL, ///< PAL, typically Europe 50 frames/second, max 625 scan lines. 14.75MHz or 7.375 MHz.
-    VIDEO_MODE_NTSC, ///< NTSC, typically USA and Japan, 60 frames/second, max 525 scan lines. 12.273 or or 6.136 MHz.
     VIDEO_MODE_PAL_BT601, ///< As \c VIDEO_MODE_PAL but using 13.5 or 6.75 MHz.
+    // put mode PAL modes here
+
+    VIDEO_MODE_NTSC, ///< NTSC, typically USA and Japan, 60 frames/second, max 525 scan lines. 12.273 or or 6.136 MHz.
     VIDEO_MODE_NTSC_BT601, ///< As \c VIDEO_MODE_NTSC but using 13.5 or 6.75 MHz.
+    // put more NTSC modes here
 } VIDEO_MODE;
 
 /**

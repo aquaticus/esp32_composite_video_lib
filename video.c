@@ -117,7 +117,7 @@ EventGroupHandle_t g_video_event_group=NULL;
 
 DRAM_ATTR volatile VIDEO_SIGNAL_PARAMS g_video_signal;
 
-static inline IRAM_ATTR void render_scan_line(void) __attribute__((always_inline));
+static inline IRAM_ATTR void pal_render_scan_line(void) __attribute__((always_inline));
 static inline IRAM_ATTR void signal_vertical_sync_line(VSYNC_PULSE_LENGTH first_pulse, VSYNC_PULSE_LENGTH second_pulse) __attribute__((always_inline));
 static void IRAM_ATTR i2s_interrupt(void *dma_buffer_size_bytes);
 static void setup_video_dac(void);
@@ -794,7 +794,7 @@ static void IRAM_ATTR render_pixels_grey_1bpp(void)
     }
 }
 
-static inline IRAM_ATTR void render_scan_line(void)
+static inline IRAM_ATTR void pal_render_scan_line(void)
 {
     static bool even_frame = true;
 
@@ -872,6 +872,79 @@ static inline IRAM_ATTR void render_scan_line(void)
     }
 }
 
+static inline IRAM_ATTR void ntsc_render_scan_line(void)
+{
+    static bool first_field = true;
+
+    if( 0 == g_current_scan_line )
+    {
+        first_field = !first_field;
+#if CONFIG_VIDEO_TRIGGER_MODE_FIELD
+        DIAG_PIN_HI();
+#endif
+        xEventGroupClearBits( g_video_event_group,
+                              COMPOSITE_EVENT_FRAME_END_BIT |
+                                  COMPOSITE_EVENT_FRAME_VISIBLE_END_BIT
+        );
+    }
+
+    g_current_scan_line++;
+
+#if CONFIG_VIDEO_TRIGGER_MODE_LINE
+    DIAG_PIN_HI();
+#endif
+
+    if( g_current_scan_line <= 3) // lines 1,2,3
+    {
+        signal_vertical_sync_line(VSYNC_PULSE_SHORT,VSYNC_PULSE_SHORT);
+    }
+    else if( g_current_scan_line <= 6 ) //line 4,5,6
+    {
+        signal_vertical_sync_line(VSYNC_PULSE_LONG,VSYNC_PULSE_LONG);
+    }
+    else if( g_current_scan_line <= 9) // lines 7,8,9
+    {
+        signal_vertical_sync_line(VSYNC_PULSE_SHORT,VSYNC_PULSE_SHORT);
+    }
+    else if( g_current_scan_line < g_video_signal.offset_y_lines )
+    {
+        signal_blank_line();
+    }
+    else if (g_current_scan_line < g_video_signal.offset_y_lines+g_video_signal.height_pixels)
+    {
+        PIXEL_STOPWATCH_START();
+        signal_blank_line();
+        g_video_signal.pixel_render_func();
+        PIXEL_STOPWATCH_STOP();
+    }
+    else if( g_current_scan_line < g_video_signal.number_of_lines  )
+    {
+        if( g_current_scan_line == g_video_signal.offset_y_lines+g_video_signal.height_pixels && first_field )
+        {
+            // All visible lines passed
+            xEventGroupSetBits(g_video_event_group, COMPOSITE_EVENT_FRAME_VISIBLE_END_BIT);
+        }
+
+        signal_blank_line();
+    }
+
+#if CONFIG_VIDEO_TRIGGER_MODE_LINE
+    DIAG_PIN_LO();
+#endif
+
+    if( g_current_scan_line >= g_video_signal.number_of_lines )
+    {
+#if CONFIG_VIDEO_TRIGGER_MODE_FIELD
+        DIAG_PIN_LO();
+#endif
+        g_current_scan_line=0;
+        if( !first_field )
+        {
+            xEventGroupSetBits(g_video_event_group, COMPOSITE_EVENT_FRAME_END_BIT);
+        }
+    }
+}
+
 static void IRAM_ATTR i2s_interrupt(void *dma_buffer_size_bytes)
 {
 	if (I2S0.int_st.out_eof)
@@ -881,8 +954,11 @@ static void IRAM_ATTR i2s_interrupt(void *dma_buffer_size_bytes)
 #endif
         INTERRUPT_STOPWATCH_START();
 
-        render_scan_line();
-        
+        if( g_video_signal.video_mode >= VIDEO_MODE_NTSC )
+            ntsc_render_scan_line();
+        else
+            pal_render_scan_line();
+
         INTERRUPT_STOPWATCH_STOP();
 #if CONFIG_VIDEO_TRIGGER_MODE_ISR
         DIAG_PIN_LO();
