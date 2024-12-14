@@ -21,3 +21,5 @@ To generate NTSC video, use `menuconfig` to change the mode.
 3. Check `NTSC video mode instead of default PAL/SECAM`.
 
 ## Video output
+
+![Philips PM5544 test pattern](../../doc/esp32_composite_video_demo.gif)
