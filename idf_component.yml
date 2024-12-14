@@ -9,10 +9,9 @@ dependencies:
   # TODO: Make it conditional CONFIG_VIDEO_ENABLE_LVGL_SUPPORT
   lvgl/lvgl:
     version: "^8.2.0"
-  
+
 tags:
   - video
 maintainers:
   - aquaticus <info@aquaticus.info>
-files:
-   use_gitignore: true
+

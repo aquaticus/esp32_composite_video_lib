@@ -106,7 +106,7 @@ Add the library as a new dependency to your project.
 The library is hosted on Espresiff repo
 
 ```bash
-idf.py add-dependency esp32_composite_video_lib
+idf.py add-dependency aquaticus/esp32_composite_video_lib
 ```
 
 You can optionally launch the configuration menu with `idf.py menuconfig` on your project root directory. Go to Component config and then `Composite Video Configuration`.
@@ -114,7 +114,7 @@ You can optionally launch the configuration menu with `idf.py menuconfig` on you
 To use LVGL library along composite video library add one more submodule:
 
 ```bash
-idf.py add-dependency lvgl
+idf.py add-dependency lvgl/lvgl
 ```
 
 # Sample program
