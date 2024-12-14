@@ -2,6 +2,7 @@ build/
 .vscode/
 .idea/
 .settings/
+dist/
 
 
 # ESP-IDF default build directory name

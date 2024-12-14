@@ -14,3 +14,5 @@ tags:
   - video
 maintainers:
   - aquaticus <info@aquaticus.info>
+files:
+   use_gitignore: true
