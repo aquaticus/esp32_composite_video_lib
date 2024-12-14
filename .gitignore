@@ -2,3 +2,19 @@ build/
 .vscode/
 .idea/
 .settings/
+
+
+# ESP-IDF default build directory name
+build
+
+# lock files for examples and components
+dependencies.lock
+
+# managed_components for examples
+managed_components
+
+# Example project files
+examples/**/build/
+examples/**/build_*_*/
+examples/**/sdkconfig
+examples/**/sdkconfig.old

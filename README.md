@@ -1,6 +1,7 @@
 ![Demo Slides](doc/esp32_composite_video_demo.gif)
 
 # Introduction
+
 *ESP32 Composite Video Library* is a library that provides functions to generate
 composite video signal without any external hardware on ESP32 chips.
 
@@ -101,19 +102,19 @@ Here is a list of predefined commonly used resolutions:
 
 # How to use
 
-Add the library as a new component to your project.
+Add the library as a new dependency to your project.
+The library is hosted on Espresiff repo
 
 ```bash
-git submodule add https://github.com/aquaticus/esp32_composite_video_lib.git components/esp32_composite_video_lib
+idf.py add-dependency esp32_composite_video_lib
 ```
-The above command will clone the library into the `components` directory.
 
 You can optionally launch the configuration menu with `idf.py menuconfig` on your project root directory. Go to Component config and then `Composite Video Configuration`.
 
 To use LVGL library along composite video library add one more submodule:
 
 ```bash
-git submodule add https://github.com/lvgl/lvgl.git components/lvgl
+idf.py add-dependency lvgl
 ```
 
 # Sample program
@@ -128,29 +129,13 @@ void app_main(void)
     video_test_pal(VIDEO_TEST_PM5544);
 }
 ```
+
 The above program will display Philips PM5544 pattern in PAL 384x288 resolution. For NTSC, replace function to `video_test_ntsc()`.
 
-## Demo
+## Examples
 
-Demo program is available on separate repository: https://github.com/aquaticus/esp32_composite_video_demo
+Examples are available in `examples` subdirectory.
 
-Clone the repository:
-
-```bash
-git clone --recurse-submodules https://github.com/aquaticus/esp32_composite_video_demo
-```
-Build
-
-```bash
-cd esp32_composite_video_demo
-idf.py build
-```
-
-and upload to the board
-
-```bash
-idf.py flash
-```
 # API
 
 The library provides functions to setup image generation but not functions to draw lines or other graphics primitives.

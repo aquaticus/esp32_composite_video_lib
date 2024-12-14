@@ -35,12 +35,6 @@ menu "Composite Video Configuration"
 			help
 				Smooth animations but update rate may decrease. 
 				Does not work for direct frame buffer access.
-
-		config VIDEO_LVGL_INCLUDE_PATH
-			string  "Path to lvgl.h header"
-			default "../../lvgl/lvgl.h"
-			help
-				Relative or absolute path to lvgl.h file from LVGL component
 	endif
 
 	config VIDEO_ENABLE_DIAG_PIN
@@ -75,7 +69,6 @@ menu "Composite Video Configuration"
 		bool "Custom"
 	endchoice
 
-
 	endif
 
 	config VIDEO_DIAG_ENABLE_INTERRUPT_STATS
@@ -85,7 +78,7 @@ menu "Composite Video Configuration"
 			Periodically write interrupt timing stats on the log.
 
 	config VIDEO_DIAG_DISPLAY_TEST_FUNC
-		bool "Enable display_test_image() function"
+		bool "Enable video_test_pal() and video_test_ntsc() functions"
 		default n
 		help
 			Compiles function to display test patterns including Philips PM5544

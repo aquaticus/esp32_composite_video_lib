@@ -16,7 +16,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "sdkconfig.h"
+// using old DAC API
+#define CONFIG_DAC_SUPPRESS_DEPRECATE_WARN 1
+
+// using old ADC API
+#define CONFIG_ADC_SUPPRESS_DEPRECATE_WARN 1
+
+// using old I2S API
+#define CONFIG_I2S_SUPPRESS_DEPRECATE_WARN 1
+
 #include "video.h"
 #include "esp_heap_caps.h"
 #include "esp_attr.h"
@@ -31,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "soc/io_mux_reg.h"
 #include "esp32/rom/gpio.h"
 #include "esp32/rom/lldesc.h"
-#include "driver/periph_ctrl.h"
+#include "esp_private/periph_ctrl.h"
 #include "driver/dac.h"
 #include "driver/gpio.h"
 #include "driver/i2s.h"
@@ -117,18 +125,18 @@ EventGroupHandle_t g_video_event_group=NULL;
 
 DRAM_ATTR volatile VIDEO_SIGNAL_PARAMS g_video_signal;
 
-static inline IRAM_ATTR void pal_render_scan_line(void) __attribute__((always_inline));
-static inline IRAM_ATTR void signal_vertical_sync_line(VSYNC_PULSE_LENGTH first_pulse, VSYNC_PULSE_LENGTH second_pulse) __attribute__((always_inline));
-static void IRAM_ATTR i2s_interrupt(void *dma_buffer_size_bytes);
+static inline void pal_render_scan_line(void) __attribute__((always_inline));
+static inline void signal_vertical_sync_line(VSYNC_PULSE_LENGTH first_pulse, VSYNC_PULSE_LENGTH second_pulse) __attribute__((always_inline));
+static void i2s_interrupt(void *dma_buffer_size_bytes);
 static void setup_video_dac(void);
 
-static void IRAM_ATTR render_pixels_grey_8bpp(void);
-static void IRAM_ATTR render_pixels_grey_4bpp(void);
-static void IRAM_ATTR render_pixels_grey_1bpp(void);
-static void IRAM_ATTR render_pixels_color_8bpp(void);
-static void IRAM_ATTR render_pixels_color_16bpp(void);
+static void render_pixels_grey_8bpp(void);
+static void render_pixels_grey_4bpp(void);
+static void render_pixels_grey_1bpp(void);
+static void render_pixels_color_8bpp(void);
+static void render_pixels_color_16bpp(void);
 #if CONFIG_VIDEO_ENABLE_LVGL_SUPPORT
-static void IRAM_ATTR render_pixels_lvgl_1bpp(void);
+static void render_pixels_lvgl_1bpp(void);
 #endif
 
 /// Set to true if video is generated and buffers allocated.
@@ -234,7 +242,7 @@ static void setup_video_signal(VIDEO_MODE mode, DAC_FREQUENCY dac_frequency, uin
     {
         g_video_signal.frame_buffer_size_bytes = width_pixels*height_pixels*g_video_signal.bits_per_pixel/BITS_IN_BYTE;
     }
-    ESP_LOGD(TAG, "Bits per pixel: %u, %ux%u. FB size %u bytes ", g_video_signal.bits_per_pixel, g_video_signal.width_pixels, g_video_signal.height_pixels, g_video_signal.frame_buffer_size_bytes);
+    ESP_LOGD(TAG, "Bits per pixel: %u, %ux%u. FB size %lu bytes ", g_video_signal.bits_per_pixel, g_video_signal.width_pixels, g_video_signal.height_pixels, g_video_signal.frame_buffer_size_bytes);
 
     assert(g_video_signal.frame_buffer_size_bytes%4==0); //for 32 bit access (read/write 4 bytes at once)
 
@@ -243,51 +251,54 @@ static void setup_video_signal(VIDEO_MODE mode, DAC_FREQUENCY dac_frequency, uin
     g_video_signal.frame_buffer = (uint8_t*)heap_caps_calloc(g_video_signal.frame_buffer_size_bytes, sizeof(uint8_t), caps);
     if(NULL == g_video_signal.frame_buffer)
     {
-        ESP_LOGE(TAG, "Failed to allocate %u bytes for frame buffer", g_video_signal.frame_buffer_size_bytes);
+        ESP_LOGE(TAG, "Failed to allocate %lu bytes for frame buffer", g_video_signal.frame_buffer_size_bytes);
         heap_caps_print_heap_info(caps);
         assert(false);
     }
-    ESP_LOGI(TAG, "Allocated %u bytes for frame buffer", g_video_signal.frame_buffer_size_bytes);
+    ESP_LOGI(TAG, "Allocated %lu bytes for frame buffer", g_video_signal.frame_buffer_size_bytes);
 }
 
 static void set_dac_frequency(void)
 {
     switch(g_video_signal.dac_frequency)
     {
-        case DAC_FREQ_PAL_14_75MHz:
-            rtc_clk_apll_enable(1, 0xCD, 0xCC, 0x07, 2); //= 14.750004 MHz
+        case DAC_FREQ_PAL_14_75MHz: //= 14.750004 MHz
+            rtc_clk_apll_coeff_set(2, 0xCD, 0xCC, 0x07);
             ESP_LOGI(TAG, "DAC clock configured to 14.75 MHz. PAL 640 pixels.");
             break;
 
-        case DAC_FREQ_PAL_7_357MHz:
-            rtc_clk_apll_enable(1, 0xCD, 0xCC, 0x07, 6); //= 7.375002 MHz
+        case DAC_FREQ_PAL_7_357MHz: //= 7.375002 MHz
+            rtc_clk_apll_coeff_set(6, 0xCD, 0xCC, 0x07); 
             ESP_LOGI(TAG, "DAC clock configured to 7.35 MHz. PAL 320 pixels.");
             break;
 
         case DAC_FREQ_NTSC_12_273MHz: //=12272720
-            rtc_clk_apll_enable(1, 209, 69, 8, 3);
+            rtc_clk_apll_coeff_set(3, 209, 69, 8);
             ESP_LOGI(TAG, "DAC clock configured to 12.273 MHz. NTSC 640 pixels.");
             break;
 
         case DAC_FREQ_NTSC_6_136MHz: //=6.136360
             ESP_LOGI(TAG, "DAC clock configured to 6.136 MHz. NTSC 320 pixels.");
-            rtc_clk_apll_enable(1, 209, 69, 8, 8);
+            rtc_clk_apll_coeff_set(8, 209, 69, 8);
             break;
 
         case DAC_FREQ_PAL_NTSC_13_5MHz: //=13500001
             ESP_LOGI(TAG, "DAC clock configured to 13.5 MHz. BT.601 PAL/NTSC 640 pixels.");
-            rtc_clk_apll_enable(1, 205, 76, 20, 7);
+            rtc_clk_apll_coeff_set(7, 205, 76, 20);
             break;
 
         case DAC_FREQ_PAL_NTSC_6_75MHz: // =6.750000
             ESP_LOGI(TAG, "DAC clock configured to 6.75 MHz. BT.601 PAL/NTSC 320 pixels.");
-            rtc_clk_apll_enable(1, 205, 76, 20, 16);
+            rtc_clk_apll_coeff_set(16, 205, 76, 20);
             break;
 
         default:
             ESP_LOGE(TAG, "Not supported DAC frequency");
             assert(false);
             break;
+    
+        rtc_clk_apll_enable(1);
+
     }
 }
 
@@ -337,8 +348,8 @@ static void setup_video_dac(void)
 
     set_dac_frequency();
 
-    ESP_ERROR_CHECK(dac_output_enable(DAC_CHANNEL_1));
-    ESP_LOGI(TAG, "DAC output on GPIO25 (DAC_CHANNEL_1)");
+    ESP_ERROR_CHECK(dac_output_enable(DAC_CHAN_0));
+    ESP_LOGI(TAG, "DAC output on GPIO25 (DAC_CHAN_0)");
 
     ESP_ERROR_CHECK(dac_i2s_enable());
     ESP_LOGD(TAG, "DAC I²S enabled");
@@ -376,7 +387,7 @@ void video_stop(void)
     //disable i2s DAC
     ESP_LOGD(TAG, "Disable DAC");
     dac_i2s_disable();
-    dac_output_disable(DAC_CHANNEL_1);
+    dac_output_disable(DAC_CHAN_0);
     
     // free DMA buffers 
     const size_t DMA_BUFFER_COUNT = sizeof(dma_buffers)/sizeof(lldesc_t);
@@ -488,7 +499,7 @@ void video_init(uint16_t width, uint16_t height, FRAME_BUFFER_FORMAT fb_format, 
 	setup_video_dac();
 
     ESP_LOGD(TAG,"rtc_clk_xtal_freq_get() = %d", (int)rtc_clk_xtal_freq_get());
-    ESP_LOGI(TAG,"DAC frequency: %u Hz", (uint32_t)g_video_signal.dac_frequency);
+    ESP_LOGI(TAG,"DAC frequency: %lu Hz", (uint32_t)g_video_signal.dac_frequency);
     ESP_LOGD(TAG,"DAC SYNC  level: %u", DAC_LEVEL_SYNC);
     ESP_LOGD(TAG,"DAC BLACK level: %u", DAC_LEVEL_BLACK);
     ESP_LOGD(TAG,"DAC WHITE level: %u", DAC_LEVEL_WHITE);
@@ -605,14 +616,14 @@ static void IRAM_ATTR render_pixels_lvgl_1bpp(void)
         g = (raw_byte & 0b00011100 ) >> 2; \
         b = (raw_byte & 0b00000011 ) < 1; //normalize to 3 bits
 
-/// Convers R,G,B to luma value
+/// Converts R,G,B to luma value
 //#define RGB_TO_LUMA() ((r+r+b+g+g+g)/6)
 #define RGB_TO_LUMA()  ((2126 * r + 7152 * g + 722 * b)/10000)
 
 /// Converts 3 bit luma value to DAC level
 #define LUMA_TO_DAC(luma) (DAC_LEVEL_BLACK + (luma*factor_x1024)/1024)
 
-// this version converts color RBG332 to greyscale
+// this version converts color RBG332 to greyscale (no support for color at the moment)
 static void IRAM_ATTR render_pixels_color_8bpp(void)
 {
     const uint32_t factor_x1024 = ((DAC_LEVEL_WHITE-DAC_LEVEL_BLACK)*1024)/0b00000111;
@@ -671,7 +682,7 @@ static void IRAM_ATTR render_pixels_color_8bpp(void)
 
 /**
  * @brief Renders pixels for RGB565 framebuffer color
- * Current version converts to greyscale.
+ * Current version converts to greyscale (no support for color at the moment).
  */
 static void IRAM_ATTR render_pixels_color_16bpp(void)
 {

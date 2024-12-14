@@ -1,0 +1,9 @@
+menu "Example Configuration"
+
+	config VIDEO_MODE_NTSC
+		bool "NTSC video mode instead of default PAL/SECAM"
+		default n
+		help
+			Configure example to work with NTSC used mostly in North America and Japan.
+			Default PAL/SECAM is used in Europe and other countries.
+endmenu

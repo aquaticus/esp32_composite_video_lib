@@ -1,0 +1,9 @@
+dependencies:
+  aquaticus/esp32_composite_video_lib:
+    override_path: ../../../
+  
+  idf:
+    version: ">=5.3.1"
+
+  lvgl/lvgl:
+    version: "^8.2.0"

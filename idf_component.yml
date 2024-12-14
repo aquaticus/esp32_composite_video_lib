@@ -1,3 +1,16 @@
-version: "1.0.0"
-description: ESP32 Composite Video library. Display images on TV or monitor with composite input.
+version: "1.1.0"
+targets:
+  - esp32
+description: ESP32 Composite Video library. Enables displaying images on TVs or monitors with composite input.
+repository: https://github.com/aquaticus/esp32_composite_video_lib
 url: https://github.com/aquaticus/esp32_composite_video_lib
+dependencies:
+  idf: ">=5.3.1"
+  # TODO: Make it conditional CONFIG_VIDEO_ENABLE_LVGL_SUPPORT
+  lvgl/lvgl:
+    version: "^8.2.0"
+  
+tags:
+  - video
+maintainers:
+  - aquaticus <info@aquaticus.info>

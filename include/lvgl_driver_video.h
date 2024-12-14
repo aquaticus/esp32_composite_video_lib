@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "video.h"
 
-#include CONFIG_VIDEO_LVGL_INCLUDE_PATH
+#include "lvgl.h"
 
 void lv_video_disp_init(GRAPHICS_MODE mode);
 void lv_video_disp_init_buf(GRAPHICS_MODE mode, lv_color_t* pixel_buffer, uint32_t buffer_pixel_count);
