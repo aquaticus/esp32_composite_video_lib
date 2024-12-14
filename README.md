@@ -54,7 +54,7 @@ The library should work on any ESP32 board with Tensilica core and free GPIO25 p
 
 No external elements are required. Composite signal is generated on **GPIO25** pin, and it can be directly connected to composite input.
 
-It requires ESP32-IDF development environment. Version 4.4 was used.
+It requires ESP32-IDF development environment version 5.3.x.
 
 >:information_source: Compiler optimization level must be set to **performance** (`-O2`).
 
