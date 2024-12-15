@@ -41,8 +41,8 @@ menu "Composite Video Configuration"
 		bool "Enable diagnostic pin"
 		default n
 		help
-			When enabled specified pin is set high at the begining of the scan line or the field.
-			Use as extranal trigger source for osciloscope or logic analyzer.
+			When enabled specified pin is set high at the beginning of the scan line or the field.
+			Use as external trigger source for oscilloscope or logic analyzer.
 			It can be also used to measure timings.
 
 	if VIDEO_ENABLE_DIAG_PIN
