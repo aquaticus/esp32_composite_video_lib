@@ -296,10 +296,9 @@ static void set_dac_frequency(void)
             ESP_LOGE(TAG, "Not supported DAC frequency");
             assert(false);
             break;
-    
-        rtc_clk_apll_enable(1);
-
     }
+
+    rtc_clk_apll_enable(1);
 }
 
 static void setup_video_dac(void)
